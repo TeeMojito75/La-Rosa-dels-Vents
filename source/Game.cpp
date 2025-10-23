@@ -1,6 +1,13 @@
 #include "Game.h"
 #include <stdio.h>
 
+
+void Game::initFs() {
+    if (!nitroFSInit(NULL)) { while (1) swiWaitForVBlank(); }
+    chdir("nitro:/");
+    NF_SetRootFolder("NITROFS"); 
+}
+
 void Game::initVideo() {
     // 2D mode on both screens
     NF_Set2D(0, 0);
@@ -16,23 +23,15 @@ void Game::initVideo() {
     NF_InitSpriteSys(1);
 }
 
-void Game::initFs() {
-    // NitroFS
-    if (!nitroFSInit(NULL)) {
-        while (1) swiWaitForVBlank();
-    }
-    chdir("nitro:/");
-    NF_SetRootFolder("NITROFS");
-}
-
 void Game::loadResources() {
-    // Backgrounds
-    NF_LoadTiledBg("TopScreen", "Top", 256, 256);
-    NF_LoadTiledBg("BottomScreen", "Bottom", 256, 256);
+    // Fondos 256x256
+    NF_LoadTiledBg("Backgrounds/Top/Top", "Top",    256, 256);
+    NF_LoadTiledBg("Backgrounds/Bottom/Bottom", "Bottom", 256, 256);
 
-    // Spritesheet + palette
-    NF_LoadSpriteGfx("Sprite_TicTacToe", 0, 32, 32);
-    NF_LoadSpritePal("Sprite_TicTacToe", 0);
+    // Sprites 32x32
+    NF_LoadSpriteGfx("Sprites/TicTacToe", 0, 32, 32);
+    NF_LoadSpritePal("Sprites/TicTacToe", 0);
+
 
     // Move to VRAM
     NF_VramSpriteGfx(1, 0, 0, false);
@@ -46,8 +45,9 @@ void Game::createBackgrounds() {
 }
 
 void Game::run() {
-    initVideo();
+ 
     initFs();
+    initVideo();
     loadResources();
     createBackgrounds();
 

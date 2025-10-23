@@ -13,17 +13,17 @@ ARM_NONE_EABI_PATH	?= $(WONDERFUL_TOOLCHAIN)/toolchain/gcc-arm-none-eabi/bin/
 
 NAME		:= $(shell basename $(CURDIR))
 GAME_TITLE	:= $(shell basename $(CURDIR)).nds
-GAME_SUBTITLE	:= Prova c++ d'un joc
-GAME_AUTHOR	:= Joan Carles Veny Martó
-GAME_ICON	:= $(BLOCKSDS)/sys/icon.bmp
+GAME_SUBTITLE	:= La Rosa dels Vents. Zelda-like 2d adventure
+GAME_AUTHOR	:= Joan Carles Veny Martí
+GAME_ICON := $(CURDIR)/icon.bmp
 
 # Source code paths
 # -----------------
 
 SOURCEDIRS	:= source 
 INCLUDEDIRS := -I$(CURDIR)/include
-INCLUDEDIRS += -I/opt/blockds/internal/libnds/include
-INCLUDEDIRS += -I/opt/blockds/external/nflib/include
+INCLUDEDIRS += -I/opt/blocksds/internal/libnds/include
+INCLUDEDIRS += -I/opt/blocksds/external/nflib/include
 GFXDIRS		:=
 BINDIRS		:=
 AUDIODIRS	:=
