@@ -21,7 +21,7 @@ GAME_ICON := $(CURDIR)/icon.bmp
 # -----------------
 
 SOURCEDIRS	:= source 
-INCLUDEDIRS := -I$(CURDIR)/include
+INCLUDEDIRS := -I$(CURDIR)/include 
 INCLUDEDIRS += -I/opt/blocksds/internal/libnds/include
 INCLUDEDIRS += -I/opt/blocksds/external/nflib/include
 GFXDIRS		:=
