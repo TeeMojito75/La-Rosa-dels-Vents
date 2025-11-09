@@ -2,15 +2,12 @@
 #define ECS_SYSTEM_HPP
 
 #include <set>
-#include "ecs/Types.hpp"
+#include "ecs/Entity.hpp"  
 
 namespace ecs {
-
-class System {
-public:
-    std::set<Entity> mEntities;
-};
-
-} 
-
-#endif 
+    class System {
+        public:
+            std::set<Entity> mEntities;  
+    };
+}
+#endif

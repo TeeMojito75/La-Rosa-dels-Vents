@@ -1,62 +1,75 @@
 #include "ecs/EntityManager.hpp"
+#include <cassert>
 
-namespace ecs 
-{
-    
-    EntityManager::EntityManager() 
+namespace ecs {
+
+    EntityManager::EntityManager()
     {
-        // Inicialitzem el vector amb tots els possibles ID
-        for (Entity entity = 0; entity < MAX_ENTITIES; ++entity) 
+        // Inicialitzem la pool de IDs i l'estat de firmes
+        for (EntityId id = 0; id < MAX_ENTITIES; ++id) 
         {
-            mAvailableEntitites.push(entity);    
+            mAvailableEntitites.push(id);
+            mAlive[id] = false;
+            mSignatures[id].reset();
         }
+        mLivingEntityCount = 0;
     }
 
-    Entity EntityManager::createEntity() 
+    Entity EntityManager::createEntity()
     {
-        assert(mLivingEntityCount < MAX_ENTITIES && "Too many entities in existance");
-        
-        // Ara agafem una ID del front de la cua
-        Entity id = mAvailableEntitites.front();
+        assert(mLivingEntityCount < MAX_ENTITIES && "Too many entities in existence.");
+        assert(!mAvailableEntitites.empty() && "No available entity IDs.");
+
+        const EntityId id = mAvailableEntitites.front();
         mAvailableEntitites.pop();
+
+        mAlive[id] = true;
+        mSignatures[id].reset();
         ++mLivingEntityCount;
 
-        return id;
+        return Entity(id, this);
     }
 
-    void EntityManager::destroyEntity(Entity entity) 
+    void EntityManager::destroyEntity(Entity entity)
     {
-        assert(entity < MAX_ENTITIES && "Entity out of range.");
+        const EntityId id = entity.id();
+        assert(id < MAX_ENTITIES && "Entity id out of range.");
+        assert(mAlive[id] && "Destroying a non-living entity.");
 
-        // Invalidam la firma de l'entitat destruida
-        mSignatures[entity].reset();
+        // Neteja la firma, la marca com a morta i retorna l'id a la pool
+        mSignatures[id].reset();
+        mAlive[id] = false;
 
-        // Retornem la id destruida a la cua
-        mAvailableEntitites.push(entity);
+        mAvailableEntitites.push(id);
+        assert(mLivingEntityCount > 0 && "Living entity count underflow.");
         --mLivingEntityCount;
-        
     }
 
     void EntityManager::setSignature(Entity entity, Signature signature)
     {
-        assert(entity < MAX_ENTITIES && "Entity out of range.");
+        const EntityId id = entity.id();
+        assert(id < MAX_ENTITIES && "Entity id out of range.");
+        assert(mAlive[id] && "Setting signature on non-living entity.");
 
-		// Posem la firma de l'entitat a l'array
-		mSignatures[entity] = signature;
-
+        mSignatures[id] = signature;
     }
 
-    Signature EntityManager::getSignature(Entity entity) const 
+    Signature EntityManager::getSignature(Entity entity) const
     {
-        assert(entity < MAX_ENTITIES && "Entity out of range.");
-
-		// Obtenim la firma de l'entitat de l'array
-		return mSignatures[entity];
-
+        const EntityId id = entity.id();
+        assert(id < MAX_ENTITIES && "Entity id out of range.");
+        return mSignatures[id];
     }
 
-    std::uint32_t EntityManager::getEntityLivingCount() const 
+    std::uint32_t EntityManager::getEntityLivingCount() const
     {
         return mLivingEntityCount;
     }
+
+    bool EntityManager::isAlive(EntityId id) const
+    {
+        assert(id < MAX_ENTITIES && "Entity id out of range.");
+        return mAlive[id];
+    }
+
 }

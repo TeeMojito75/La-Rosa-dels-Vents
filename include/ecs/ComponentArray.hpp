@@ -1,88 +1,79 @@
 #ifndef ECS_COMPONENTARRAY_HPP
 #define ECS_COMPONENTARRAY_HPP
-
 #include <array>
 #include <unordered_map>
-#include <cassert>
-#include "ecs/Types.hpp"
+#include "ecs/Utils.hpp"
+#include "ecs/Entity.hpp"
 
-namespace ecs 
-{
-    class IComponentArray
-    {
+namespace ecs {
+    class IComponentArray {
         public:
             virtual ~IComponentArray() = default;
             virtual void EntityDestroyed(Entity entity) = 0;
     };
 
     template<typename T>
-    class ComponentArray : public IComponentArray
-    {
+    class ComponentArray : public IComponentArray {
         public:
-            void InsertData(Entity entity, T component)
-            {
-                assert(mEntityToIndexMap.find(entity) == mEntityToIndexMap.end() && "Component added to same entity more than once.");
+            void InsertData(Entity e, T value)   { InsertData(e.id(), std::move(value)); }
+            void RemoveData(Entity e)            { RemoveData(e.id()); }
+            T&   GetData(Entity e)               { return GetData(e.id()); }
+            bool HasData(Entity e) const         { return HasData(e.id()); }
 
-                // Posem un nou entry al final i actualitzem el map
+            
+            void InsertData(EntityId entity, T component) {
+                assert(mEntityToIndexMap.find(entity) == mEntityToIndexMap.end() && "Component added to same entity more than once.");
+                
                 size_t newIndex = mSize;
+                
                 mEntityToIndexMap[entity] = newIndex;
                 mIndexToEntityMap[newIndex] = entity;
-                mComponentArray[newIndex] = component;
+                mComponentArray[newIndex] = std::move(component);
+                
                 ++mSize;
             }
+
+            void RemoveData(EntityId id) {
+                assert(mEntityToIndexMap.find(id) != mEntityToIndexMap.end() && "Removing non-existent component.");
             
-            void RemoveData(Entity entity)
-            {
-                assert(mEntityToIndexMap.find(entity) != mEntityToIndexMap.end() && "Removing non-existent component.");
+                size_t indexOfRemovedEntity = mEntityToIndexMap[id];
+                size_t indexOfLastElement   = mSize - 1;
+                mComponentArray[indexOfRemovedEntity] = std::move(mComponentArray[indexOfLastElement]);
 
-                // Copiem l'element al final a la posició de l'element eliminat per mantenir densitat
-                size_t indexOfRemovedEntity = mEntityToIndexMap[entity];
-                size_t indexOfLastElement = mSize - 1;
-                mComponentArray[indexOfRemovedEntity] = mComponentArray[indexOfLastElement];
-
-                // Actualitzem el diccionari per que apunti a l'elemnt mogut
-                Entity entityOfLastElement = mIndexToEntityMap[indexOfLastElement];
+                EntityId entityOfLastElement = mIndexToEntityMap[indexOfLastElement];
                 mEntityToIndexMap[entityOfLastElement] = indexOfRemovedEntity;
                 mIndexToEntityMap[indexOfRemovedEntity] = entityOfLastElement;
 
-                mEntityToIndexMap.erase(entity);
-                mIndexToEntityMap.erase(entity);
-
+                mEntityToIndexMap.erase(id);
+                mIndexToEntityMap.erase(indexOfLastElement);
                 --mSize;
             }
 
-            T& GetData(Entity entity) 
-            {
-                assert(mEntityToIndexMap.find(entity) != mEntityToIndexMap.end() && "Retrieving non-existent component.");
-
-                // Retornem una referència al component de l'entitat
-                return mComponentArray[mEntityToIndexMap[entity]];
+            T& GetData(EntityId id) {
+                auto it = mEntityToIndexMap.find(id);
+               
+                assert(it != mEntityToIndexMap.end() && "Retrieving non-existent component.");
+                
+                return mComponentArray[it->second];
             }
 
-            void EntityDestroyed(Entity entity) override
-            {
-                if (mEntityToIndexMap.find(entity) != mEntityToIndexMap.end())
-                {
-                    // Eliminem el component de l'entitat si existia
-                    removeData(entity);
-                }
+            bool HasData(EntityId entity) const {
+                return mEntityToIndexMap.find(entity) != mEntityToIndexMap.end();
+            }
+
+            void EntityDestroyed(Entity entity) override {
+                auto it = mEntityToIndexMap.find(entity.id());
+                if (it != mEntityToIndexMap.end()) RemoveData(entity.id());
             }
 
         private:
-        
-        std::array<T, MAX_ENTITIES> mComponentArray;
-
-        // Diccionari d'una id d'entitat a un índex de l'array
-        std::unordered_map<Entity, size_t> mEntityToIndexMap;
-
-        // Diccionari invers al superior
-        std::unordered_map<size_t, Entity> mIndexToEntityMap;
-
-        // Tamany total d'entrades vàlides del array
-        size_t mSize;
-
+                std::array<T, MAX_ENTITIES> mComponentArray{};
+                // Diccionari d'una id d'entitat a un índex de l'array
+                std::unordered_map<EntityId, size_t> mEntityToIndexMap;
+                // Diccionari invers al superior
+                std::unordered_map<size_t, EntityId> mIndexToEntityMap;
+                // Tamany total d'entrades vàlides del array
+                size_t mSize = 0;
     };
 }
-
-
 #endif
