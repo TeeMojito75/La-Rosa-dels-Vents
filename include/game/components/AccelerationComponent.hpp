@@ -1,7 +1,7 @@
 #ifndef ACCELERATION_COMPONENT_HPP
 #define ACCELERATION_COMPONENT_HPP
 
-#include "Utils.hpp"
+#include "ecs/Utils.hpp"
 
 struct AccelerationComponent {
     Fix ax = 0;
