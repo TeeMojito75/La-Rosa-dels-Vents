@@ -1,27 +1,32 @@
 {
-  "version": 4,
-  "configurations": [
-    {
-      "name": "ARM9-blocksds-wonderful",
-      "compilerPath": "/opt/wonderful/toolchain/gcc-arm-none-eabi/bin/arm-none-eabi-g++",
-      "intelliSenseMode": "gcc-arm",
-      "cStandard": "c17",
-      "cppStandard": "gnu++17",
-      "defines": ["ARM9"],
-      "includePath": [
-        "${workspaceFolder}/include",
-        "${workspaceFolder}/source",
-        "/opt/blocksds/core/libs/libnds/include",
-        "/opt/blocksds/external/nflib/include"
-      ],
-      "browse": {
-        "path": [
-          "${workspaceFolder}/include",
-          "${workspaceFolder}/source",
-          "/opt/blocksds/core/libs/libnds/include",
-          "/opt/blocksds/external/nflib/include"
-        ]
-      }
-    }
-  ]
+    "version": 4,
+    "configurations": [
+        {
+            "name": "ARM9-blocksds-wonderful",
+            "compilerPath": "/opt/wonderful/toolchain/gcc-arm-none-eabi/bin/arm-none-eabi-g++",
+            "intelliSenseMode": "gcc-arm",
+            "cStandard": "c17",
+            "cppStandard": "gnu++17",
+            "defines": [
+                "ARM9"
+            ],
+            "includePath": [
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/include/ecs",
+                "${workspaceFolder}/include/game",
+                "${workspaceFolder}/include/game/components",
+                "${workspaceFolder}/include/game/systems",
+                "/opt/blocksds/core/libs/libnds/include",
+                "/opt/blocksds/external/nflib/include"
+            ],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/include",
+                    "${workspaceFolder}/source",
+                    "/opt/blocksds/core/libs/libnds/include",
+                    "/opt/blocksds/external/nflib/include"
+                ]
+            }
+        }
+    ]
 }
