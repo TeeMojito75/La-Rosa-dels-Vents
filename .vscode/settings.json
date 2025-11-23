@@ -54,6 +54,7 @@
         "text_encoding": "cpp",
         "variant": "cpp",
         "typeindex": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "cassert": "cpp"
     }
 }
