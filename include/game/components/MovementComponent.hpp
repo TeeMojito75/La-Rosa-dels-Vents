@@ -1,7 +1,7 @@
 #ifndef MOVEMENT_COMPONENT_HPP
 #define MOVEMENT_COMPONENT_HPP
 
-#include "Utils.hpp"
+#include "ecs/Utils.hpp"
 
 struct MovementComponent {
     Fix vx = 0;

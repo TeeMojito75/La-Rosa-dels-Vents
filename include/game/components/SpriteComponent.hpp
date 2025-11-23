@@ -6,9 +6,9 @@
 // Plantilla temporal
 struct SpriteComponent {
     int oamId = -1;      // ID a OAM
-    int tileIndex = 0;   // index base del tile
+    int tileIndex = 0;   // índex base del tile
     int palette = 0;
-    int size = 16;       // 8, 16, 32, 64
+    int size = 16;       
     bool flipX = false;
     bool flipY = false;
 };
