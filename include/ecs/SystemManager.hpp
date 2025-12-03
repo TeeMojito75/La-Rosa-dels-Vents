@@ -9,39 +9,68 @@
 
 namespace ecs 
 {
-    class SystemManager 
+    class SystemManager
     {
         public:
-            template<typename T, typename... Args>
-            std::shared_ptr<T> RegisterSystem(Args&&... args)
-            {
-                auto tid = ecs::get_type_id<T>();
-                assert(mSystems.find(tid) == mSystems.end() && "Registering system more than once.");
 
-                auto system = std::make_shared<T>(std::forward<Args>(args)...);
-                mSystems.insert({ tid, std::static_pointer_cast<System>(system) });
-                return system;
+            template<typename T, typename... Args>
+            T* RegisterSystem(Args&&... args)
+            {
+                TypeId typeId = get_type_id<T>();
+                assert(typeId < MAX_SYSTEMS && "Too many systems!");
+
+                assert(mSystems[typeId] == nullptr && "System already registered!");
+
+                mSystems[typeId] = std::make_unique<T>(std::forward<Args>(args)...);
+                return static_cast<T*>(mSystems[typeId].get());
             }
 
             template<typename T>
-            void SetSignature(Signature signature) 
+            void SetSignature(const Signature& signature)
             {
-                auto tid = ecs::get_type_id<T>();
+                TypeId typeId = get_type_id<T>();
+                assert(typeId < MAX_SYSTEMS);
 
-                assert(mSystems.find(tid) != mSystems.end() && "System used before registered.");
-                // Setejar la firma per aquest sistema
-                mSignatures[tid] = signature;
+                mSignatures[typeId] = signature;
             }
 
-            void EntityDestroyed(Entity entity);
-            void EntitySignatureChanged(Entity entity, Signature entitySignature);
+            void EntityDestroyed(Entity entity)
+            {
+                for (auto& sys : mSystems)
+                {
+                    if (sys)
+                    {
+                        sys->RemoveEntity(entity);
+                    }
+                }
+            }
+
+            void EntitySignatureChanged(Entity entity, const Signature& entitySignature)
+            {
+                for (TypeId i = 0; i < MAX_SYSTEMS; ++i)
+                {
+                    auto& sys = mSystems[i];
+                    if (!sys)
+                    {
+                        continue;
+                    }
+
+                    bool matches = (entitySignature & mSignatures[i]) == mSignatures[i];
+
+                    if (matches)
+                    {
+                        sys->AddEntity(entity);
+                    }
+                    else
+                    {
+                        sys->RemoveEntity(entity);
+                    }
+                }
+            }
 
         private:
-            // Diccionari de punter del tipus de sistema a una firma
-            std::unordered_map<ecs::TypeId, Signature> mSignatures; 
-
-            // Diccionari de punter del tipus de sistema a un punter de sistema
-            std::unordered_map<ecs::TypeId, std::shared_ptr<System>> mSystems{};   
+            std::array<std::unique_ptr<System>, MAX_SYSTEMS> mSystems{};
+            std::array<Signature, MAX_SYSTEMS> mSignatures{};
     };
 
 }
