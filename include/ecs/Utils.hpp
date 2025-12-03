@@ -37,27 +37,39 @@ constexpr Fix FIX_CLAMP(Fix v, Fix lo, Fix hi) {
     return (v < lo) ? lo : (v > hi) ? hi : v;
 }
 
-namespace ecs 
-{
-    // Aquests valors son ajustables depenent de les necessitats de mem
-    using EntityId = std::uint32_t;
-    inline constexpr EntityId MAX_ENTITIES = 1024;// Nombre màxim d'entitats
+namespace ecs {
 
+    // Identificador d'entitats
+    using EntityId = std::uint16_t;
 
-    using ComponentType = std::uint8_t;
-    inline constexpr std::size_t MAX_COMPONENTS = 32;// nombre màxim de components
+    // Límits del motor ECS (ajusta segons el teu joc)
+    constexpr std::size_t MAX_ENTITIES   = 256;  // quantes entitats com a màxim
+    constexpr std::size_t MAX_COMPONENTS = 32;   // quants tipus de components diferents
+    constexpr std::size_t MAX_SYSTEMS    = 16;   // quants tipus de sistemes diferents
 
+    // Firma d'entitat: quins components té
     using Signature = std::bitset<MAX_COMPONENTS>;
 
-    // Identificador de tipus
-    using TypeId = std::size_t;
+    // Identificador de tipus (component, sistema, etc.)
+    using TypeId = std::uint8_t; // suficient si MAX_COMPONENTS, MAX_SYSTEMS <= 256
 
+    // Generador global d'IDs de tipus (només per components/sistemes)
+    inline TypeId GenTypeId()
+    {
+        static TypeId last = 0;
+        assert(last < MAX_COMPONENTS && "Too many component/system types registered!");
+        return last++;
+    }
+
+    // Per a cada T, això retorna un ID únic i compacte 0..N-1
     template<typename T>
-    inline TypeId get_type_id() {
-        static int unique_tag_for_T;
-        return reinterpret_cast<TypeId>(&unique_tag_for_T);
+    inline TypeId get_type_id()
+    {
+        static TypeId id = GenTypeId();
+        return id;
     }
 
     class Entity;
 }
+
 #endif

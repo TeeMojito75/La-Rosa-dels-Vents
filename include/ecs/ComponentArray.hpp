@@ -1,79 +1,84 @@
 #ifndef ECS_COMPONENTARRAY_HPP
 #define ECS_COMPONENTARRAY_HPP
+
 #include <array>
-#include <unordered_map>
 #include "ecs/Utils.hpp"
 #include "ecs/Entity.hpp"
 
-namespace ecs {
-    class IComponentArray {
+namespace ecs 
+{
+
+    class IComponentArray
+    {
         public:
             virtual ~IComponentArray() = default;
             virtual void EntityDestroyed(Entity entity) = 0;
     };
 
     template<typename T>
-    class ComponentArray : public IComponentArray {
+    class ComponentArray : public IComponentArray 
+    {
         public:
-            void InsertData(Entity e, T value)   { InsertData(e.id(), std::move(value)); }
-            void RemoveData(Entity e)            { RemoveData(e.id()); }
-            T&   GetData(Entity e)               { return GetData(e.id()); }
-            bool HasData(Entity e) const         { return HasData(e.id()); }
+            // Insereix o reemplaça el component per a una entitat
+            void InsertData(Entity entity, const T& component)
+            {
+                const EntityId id = entity.id();
+                assert(id < MAX_ENTITIES && "EntityId out of range in ComponentArray::InsertData");
 
-            
-            void InsertData(EntityId entity, T component) {
-                assert(mEntityToIndexMap.find(entity) == mEntityToIndexMap.end() && "Component added to same entity more than once.");
-                
-                size_t newIndex = mSize;
-                
-                mEntityToIndexMap[entity] = newIndex;
-                mIndexToEntityMap[newIndex] = entity;
-                mComponentArray[newIndex] = std::move(component);
-                
-                ++mSize;
+                mComponentArray[id] = component;
+                mHasComponent[id] = true;
             }
 
-            void RemoveData(EntityId id) {
-                assert(mEntityToIndexMap.find(id) != mEntityToIndexMap.end() && "Removing non-existent component.");
-            
-                size_t indexOfRemovedEntity = mEntityToIndexMap[id];
-                size_t indexOfLastElement   = mSize - 1;
-                mComponentArray[indexOfRemovedEntity] = std::move(mComponentArray[indexOfLastElement]);
+            // Elimina el component (si existeix) per a una entitat
+            void RemoveData(Entity entity)
+            {
+                const EntityId id = entity.id();
+                assert(id < MAX_ENTITIES && "EntityId out of range in ComponentArray::RemoveData");
 
-                EntityId entityOfLastElement = mIndexToEntityMap[indexOfLastElement];
-                mEntityToIndexMap[entityOfLastElement] = indexOfRemovedEntity;
-                mIndexToEntityMap[indexOfRemovedEntity] = entityOfLastElement;
-
-                mEntityToIndexMap.erase(id);
-                mIndexToEntityMap.erase(indexOfLastElement);
-                --mSize;
+                mHasComponent[id] = false;
+                // No cal netejar mComponentArray[id], el valor es considera "no vàlid" si mHasComponent[id] == false
             }
 
-            T& GetData(EntityId id) {
-                auto it = mEntityToIndexMap.find(id);
-               
-                assert(it != mEntityToIndexMap.end() && "Retrieving non-existent component.");
-                
-                return mComponentArray[it->second];
+            // Accedeix al component d'una entitat (ha d'existir)
+            T& GetData(Entity entity)
+            {
+                const EntityId id = entity.id();
+                assert(id < MAX_ENTITIES && "EntityId out of range in ComponentArray::GetData");
+                assert(mHasComponent[id] && "Component does not exist for entity in ComponentArray::GetData");
+
+                return mComponentArray[id];
             }
 
-            bool HasData(EntityId entity) const {
-                return mEntityToIndexMap.find(entity) != mEntityToIndexMap.end();
+            const T& GetData(Entity entity) const
+            {
+                const EntityId id = entity.id();
+                assert(id < MAX_ENTITIES && "EntityId out of range in ComponentArray::GetData (const)");
+                assert(mHasComponent[id] && "Component does not exist for entity in ComponentArray::GetData (const)");
+
+                return mComponentArray[id];
             }
 
-            void EntityDestroyed(Entity entity) override {
-                auto it = mEntityToIndexMap.find(entity.id());
-                if (it != mEntityToIndexMap.end()) RemoveData(entity.id());
+            // Quan una entitat es destrueix, eliminam el component si el tenia
+            void EntityDestroyed(Entity entity) override
+            {
+                const EntityId id = entity.id();
+                if (id < MAX_ENTITIES) {
+                    mHasComponent[id] = false;
+                }
+            }
+
+            // (Opcional) saber si una entitat té aquest component
+            bool HasComponent(Entity entity) const
+            {
+                const EntityId id = entity.id();
+                return (id < MAX_ENTITIES) && mHasComponent[id];
             }
 
         private:
-                std::array<T, MAX_ENTITIES> mComponentArray{};
-                // Diccionari d'una id d'entitat a un índex de l'array
-                std::unordered_map<EntityId, size_t> mEntityToIndexMap;
-                // Diccionari invers al superior
-                std::unordered_map<size_t, EntityId> mIndexToEntityMap;
-                // Tamany total d'entrades vàlides del array
-                size_t mSize = 0;
+            std::array<T, MAX_ENTITIES> mComponentArray{};
+            std::array<bool, MAX_ENTITIES> mHasComponent{}; 
     };
-}
+
+} // namespace ecs
+
 #endif
