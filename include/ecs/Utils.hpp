@@ -1,4 +1,4 @@
-#ifndef UTILS_UTILS_HPP
+#ifndef ECS_UTILS_HPP
 #define UTILS_UTILS_HPP
 #include <bitset>
 #include <cstdint>
@@ -42,7 +42,6 @@ namespace ecs
     // Aquests valors son ajustables depenent de les necessitats de mem
     using EntityId = std::uint32_t;
     inline constexpr EntityId MAX_ENTITIES = 1024;// Nombre màxim d'entitats
-
 
     using ComponentType = std::uint8_t;
     inline constexpr std::size_t MAX_COMPONENTS = 32;// nombre màxim de components

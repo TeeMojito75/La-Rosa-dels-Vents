@@ -16,11 +16,10 @@ namespace ecs {
     class ComponentArray : public IComponentArray {
         public:
             void InsertData(Entity e, T value)   { InsertData(e.id(), std::move(value)); }
-            void RemoveData(Entity e)            { RemoveData(e.id()); }
-            T&   GetData(Entity e)               { return GetData(e.id()); }
-            bool HasData(Entity e) const         { return HasData(e.id()); }
+            void RemoveData(Entity e) { RemoveData(e.id()); }
+            T&   GetData(Entity e) { return GetData(e.id()); }
+            bool HasData(Entity e) const { return HasData(e.id()); }
 
-            
             void InsertData(EntityId entity, T component) {
                 assert(mEntityToIndexMap.find(entity) == mEntityToIndexMap.end() && "Component added to same entity more than once.");
                 
