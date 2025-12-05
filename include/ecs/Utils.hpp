@@ -1,5 +1,5 @@
 #ifndef ECS_UTILS_HPP
-#define UTILS_UTILS_HPP
+#define ECS_UTILS_HPP
 #include <bitset>
 #include <cstdint>
 #include <cassert>
