@@ -37,8 +37,7 @@ constexpr Fix FIX_CLAMP(Fix v, Fix lo, Fix hi) {
     return (v < lo) ? lo : (v > hi) ? hi : v;
 }
 
-namespace ecs 
-{
+namespace ecs  {
     // Aquests valors son ajustables depenent de les necessitats de mem
     using EntityId = std::uint32_t;
     inline constexpr EntityId MAX_ENTITIES = 1024;// Nombre màxim d'entitats
