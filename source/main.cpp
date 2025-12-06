@@ -1,80 +1,73 @@
 #include <nds.h>
 #include <nf_lib.h>
 
-#include "ecs/Entity.hpp"
 #include "ecs/EntityManager.hpp"
 #include "ecs/ComponentManager.hpp"
+#include "ecs/SystemManager.hpp"
 #include "ecs/Utils.hpp"
 
 #include "game/components/TransformComponent.hpp"
+#include "game/components/VelocityComponent.hpp"
+
+#include "game/systems/MovementSystem.hpp"
+#include "game/systems/PlayerInputSystem.hpp"
 
 using namespace ecs;
 
 int main()
 {
     consoleDemoInit();
-    printf("ECS Test con Transform (Fix 16.16)\n\n");
 
-    // ==== Managers ====
-    EntityManager entityManager;
-    ComponentManager componentManager;
+    EntityManager em;
+    ComponentManager cm;
+    SystemManager sm;
 
-    // ==== Registrar componente ====
-    componentManager.RegisterComponent<TransformComponent>();
-    ComponentType transformID = componentManager.GetComponentType<TransformComponent>();
+    // Registrar componentes
+    cm.RegisterComponent<TransformComponent>();
+    cm.RegisterComponent<VelocityComponent>();
 
-    printf("TransformComponent registrado con ID %u\n\n", transformID);
+    ComponentType tID = cm.GetComponentType<TransformComponent>();
+    ComponentType vID = cm.GetComponentType<VelocityComponent>();
 
-    // ==== Crear entidades ====
-    Entity e1 = entityManager.createEntity();
-    Entity e2 = entityManager.createEntity();
+    // Registrar sistemas
+    auto moveSys  = sm.RegisterSystem<MovementSystem>();
+    auto inputSys = sm.RegisterSystem<PlayerInputSystem>();
 
-    printf("Entidades creadas:\n");
-    printf(" e1 id=%u\n", e1.id());
-    printf(" e2 id=%u\n\n", e2.id());
+    // Firmas
+    Signature moveSig;
+    moveSig.set(tID);
+    moveSig.set(vID);
+    sm.SetSignature<MovementSystem>(moveSig);
 
-    // ==== Firmas ====
-    Signature sig;
-    sig.reset();
-    sig.set(transformID);
+    Signature inputSig;
+    inputSig.set(vID);
+    sm.SetSignature<PlayerInputSystem>(inputSig);
 
-    entityManager.setSignature(e1, sig);
-    entityManager.setSignature(e2, sig);
+    // Crear player
+    Entity player = em.createEntity();
 
-    // ==== Crear componentes ====
-    TransformComponent t1;
-    t1.x = FIX_FROM_INT(10);
-    t1.y = FIX_FROM_INT(20);
+    Signature playerSig;
+    playerSig.set(tID);
+    playerSig.set(vID);
+    em.setSignature(player, playerSig);
+    sm.EntitySignatureChanged(player, playerSig);
 
-    TransformComponent t2;
-    t2.x = FIX_FROM_INT(50);
-    t2.y = FIX_FROM_INT(80);
+    // Añadir componentes
+    cm.AddComponent<TransformComponent>(player, { FIX_FROM_INT(30), FIX_FROM_INT(30) });
+    cm.AddComponent<VelocityComponent>(player, { FIX_ZERO, FIX_ZERO });
 
-    componentManager.AddComponent<TransformComponent>(e1, t1);
-    componentManager.AddComponent<TransformComponent>(e2, t2);
+    // Bucle principal
+    while (1) {
+        inputSys->Update(cm);
+        moveSys->Update(cm);
 
-    // ==== Recuperar los componentes ====
-    auto &r1 = componentManager.GetComponent<TransformComponent>(e1);
-    auto &r2 = componentManager.GetComponent<TransformComponent>(e2);
+        auto& pos = cm.GetComponent<TransformComponent>(player);
+        auto& vel = cm.GetComponent<VelocityComponent>(player);
 
-    printf("Componentes asignados:\n");
-    printf(" e1: x=%d  y=%d\n", FIX_TO_INT(r1.x), FIX_TO_INT(r1.y));
-    printf(" e2: x=%d  y=%d\n", FIX_TO_INT(r2.x), FIX_TO_INT(r2.y));
+        consoleClear();
+        printf("Pos: %d, %d\n", FIX_TO_INT(pos.x), FIX_TO_INT(pos.y));
+        printf("Vel: %d, %d\n", FIX_TO_INT(vel.vx), FIX_TO_INT(vel.vy));
 
-    // ==== Modificar valores ====
-    r1.x = r1.x + FIX_FROM_INT(5);
-    r1.y = r1.y + FIX_FROM_INT(5);
-
-    printf("\nDespues de modificar e1:\n");
-    printf(" e1: x=%d  y=%d\n", FIX_TO_INT(r1.x), FIX_TO_INT(r1.y));
-
-    // ==== Multiplicación de prueba ====
-    Fix dobleX = FIX_MUL(r1.x, FIX_FROM_INT(2));
-    printf("\nMultiplicacion test (x * 2): %d\n", FIX_TO_INT(dobleX));
-
-    // ==== Loop NDS ====
-    while (1)
-    {
         swiWaitForVBlank();
     }
 
