@@ -1,74 +1,111 @@
 #include <nds.h>
 #include <nf_lib.h>
+#include <filesystem.h>
 
 #include "ecs/EntityManager.hpp"
 #include "ecs/ComponentManager.hpp"
 #include "ecs/SystemManager.hpp"
+
 #include "ecs/Utils.hpp"
 
 #include "game/components/TransformComponent.hpp"
 #include "game/components/VelocityComponent.hpp"
+#include "game/components/SpriteComponent.hpp"
 
 #include "game/systems/MovementSystem.hpp"
 #include "game/systems/PlayerInputSystem.hpp"
+#include "game/systems/SpriteSystem.hpp"
 
 using namespace ecs;
 
-int main()
-{
+int main() {
     consoleDemoInit();
 
+    // NitroFS
+    if (!nitroFSInit(NULL)) { while (1) swiWaitForVBlank(); } 
+    chdir("nitro:/"); 
+    NF_SetRootFolder("NITROFS");
+
+    // Modo 2D en ambas pantallas
+    NF_Set2D(0, 0);
+    NF_Set2D(1, 0);
+
+    NF_InitTiledBgBuffers();
+    NF_InitTiledBgSys(1);
+
+    NF_InitSpriteBuffers();
+    NF_InitSpriteSys(1);
+
+    // Fondos 256x256
+    NF_LoadTiledBg("Backgrounds/Top/Top", "Top",    256, 256);
+    NF_LoadTiledBg("Backgrounds/Bottom/Bottom", "Bottom", 256, 256);
+    
+    // Cargar sprite
+    NF_LoadSpriteGfx("Sprites/TicTacToe", 0, 32, 32);
+    NF_LoadSpritePal("Sprites/TicTacToe", 0);
+
+    // Copiar a VRAM pantalla inferior
+    NF_VramSpriteGfx(1, 0, 0, false);
+    NF_VramSpritePal(1, 0, 0);
+
+    // Crear sprite en VRAM
+    NF_CreateTiledBg(1, 3, "Bottom");
+    NF_CreateSprite(1, 0, 0, 0, 100, 80); // screen=1, id=0
+    NF_SpriteFrame(1, 0, 2);
+
+    // ================== ECS SETUP ==================
     EntityManager em;
     ComponentManager cm;
     SystemManager sm;
 
-    // Registrar componentes
     cm.RegisterComponent<TransformComponent>();
     cm.RegisterComponent<VelocityComponent>();
+    cm.RegisterComponent<SpriteComponent>();
 
-    ComponentType tID = cm.GetComponentType<TransformComponent>();
-    ComponentType vID = cm.GetComponentType<VelocityComponent>();
+    auto moveSys   = sm.RegisterSystem<MovementSystem>();
+    auto inputSys  = sm.RegisterSystem<PlayerInputSystem>();
+    auto spriteSys = sm.RegisterSystem<SpriteSystem2D>();
 
-    // Registrar sistemas
-    auto moveSys  = sm.RegisterSystem<MovementSystem>();
-    auto inputSys = sm.RegisterSystem<PlayerInputSystem>();
+    ComponentType tid = cm.GetComponentType<TransformComponent>();
+    ComponentType vid = cm.GetComponentType<VelocityComponent>();
+    ComponentType sid = cm.GetComponentType<SpriteComponent>();
 
-    // Firmas
-    Signature moveSig;
-    moveSig.set(tID);
-    moveSig.set(vID);
-    sm.SetSignature<MovementSystem>(moveSig);
+    // Movement
+    Signature ms; ms.set(tid); ms.set(vid);
+    sm.SetSignature<MovementSystem>(ms);
 
-    Signature inputSig;
-    inputSig.set(vID);
-    sm.SetSignature<PlayerInputSystem>(inputSig);
+    // Input
+    Signature is; is.set(vid);
+    sm.SetSignature<PlayerInputSystem>(is);
 
-    // Crear player
-    Entity player = em.createEntity();
+    // Sprites
+    Signature ss; ss.set(tid); ss.set(sid);
+    sm.SetSignature<SpriteSystem2D>(ss);
 
-    Signature playerSig;
-    playerSig.set(tID);
-    playerSig.set(vID);
-    em.setSignature(player, playerSig);
-    sm.EntitySignatureChanged(player, playerSig);
+    // Crear entidad jugador
+    Entity p = em.createEntity();
 
-    // Añadir componentes
-    cm.AddComponent<TransformComponent>(player, { FIX_FROM_INT(30), FIX_FROM_INT(30) });
-    cm.AddComponent<VelocityComponent>(player, { FIX_ZERO, FIX_ZERO });
+    Signature ps; ps.set(tid); ps.set(vid); ps.set(sid);
+    em.setSignature(p, ps);
+    sm.EntitySignatureChanged(p, ps);
 
-    // Bucle principal
+    TransformComponent t{ FIX_FROM_INT(100), FIX_FROM_INT(80) };
+    VelocityComponent v{ 0, 0 };
+    SpriteComponent sp{ 0, 0, 0 };
+
+    cm.AddComponent<TransformComponent>(p, t);
+    cm.AddComponent<VelocityComponent>(p, v);
+    cm.AddComponent<SpriteComponent>(p, sp);
+
+    // ================ LOOP =================
     while (1) {
         inputSys->Update(cm);
         moveSys->Update(cm);
+        spriteSys->Update(cm);
 
-        auto& pos = cm.GetComponent<TransformComponent>(player);
-        auto& vel = cm.GetComponent<VelocityComponent>(player);
-
-        consoleClear();
-        printf("Pos: %d, %d\n", FIX_TO_INT(pos.x), FIX_TO_INT(pos.y));
-        printf("Vel: %d, %d\n", FIX_TO_INT(vel.vx), FIX_TO_INT(vel.vy));
-
+        NF_SpriteOamSet(1);
         swiWaitForVBlank();
+        oamUpdate(&oamSub);
     }
 
     return 0;
