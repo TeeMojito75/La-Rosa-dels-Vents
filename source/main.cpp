@@ -37,12 +37,11 @@ int main() {
     NF_InitSpriteSys(1);
 
     // Fondos 256x256
-    NF_LoadTiledBg("Backgrounds/Top/Top", "Top",    256, 256);
     NF_LoadTiledBg("Backgrounds/Bottom/Bottom", "Bottom", 256, 256);
     
     // Cargar sprite
-    NF_LoadSpriteGfx("Sprites/TicTacToe", 0, 32, 32);
-    NF_LoadSpritePal("Sprites/TicTacToe", 0);
+    NF_LoadSpriteGfx("Sprites/Jugador/Pages", 0, 16, 16);
+    NF_LoadSpritePal("Sprites/Jugador/Pages", 0);
 
     // Copiar a VRAM pantalla inferior
     NF_VramSpriteGfx(1, 0, 0, false);
@@ -51,7 +50,7 @@ int main() {
     // Crear sprite en VRAM
     NF_CreateTiledBg(1, 3, "Bottom");
     NF_CreateSprite(1, 0, 0, 0, 100, 80); // screen=1, id=0
-    NF_SpriteFrame(1, 0, 2);
+    NF_SpriteFrame(1, 0, 0);
 
     // ================== ECS SETUP ==================
     EntityManager em;
@@ -89,7 +88,7 @@ int main() {
     em.setSignature(p, ps);
     sm.EntitySignatureChanged(p, ps);
 
-    TransformComponent t{ FIX_FROM_INT(100), FIX_FROM_INT(80) };
+    TransformComponent t{ 100, 80 };
     VelocityComponent v{ 0, 0 };
     SpriteComponent sp{ 0, 0, 0 };
 
@@ -99,14 +98,15 @@ int main() {
 
     // ================ LOOP =================
     while (1) {
-        inputSys->Update(cm);
-        moveSys->Update(cm);
-        spriteSys->Update(cm);
+        inputSys->Update(cm);     // Cambia velocidad
+        moveSys->Update(cm);      // Cambia posición (solo una vez)
+        spriteSys->Update(cm);    // Aplica posición al sprite (solo una vez)
 
-        NF_SpriteOamSet(1);
-        swiWaitForVBlank();
-        oamUpdate(&oamSub);
+        NF_SpriteOamSet(1);       // Copia shadow OAM → real OAM
+        swiWaitForVBlank();       // Esperar VBlank
+        oamUpdate(&oamSub);       // Actualizar hardware OAM UNA vez
     }
+
 
     return 0;
 }

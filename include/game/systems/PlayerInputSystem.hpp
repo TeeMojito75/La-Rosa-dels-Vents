@@ -6,7 +6,7 @@
 #include "ecs/Utils.hpp"
 #include "ecs/ComponentManager.hpp"
 
-constexpr Fix PLAYER_SPEED = FIX_FROM_INT(2);
+constexpr int PLAYER_SPEED = 1;
 
 class PlayerInputSystem : public ecs::System
 {
@@ -20,8 +20,8 @@ public:
         {
             auto& vel = cm.GetComponent<VelocityComponent>(e);
 
-            vel.vx = FIX_ZERO;
-            vel.vy = FIX_ZERO;
+            vel.vx = 0;
+            vel.vy = 0;
 
             bool left  = held & KEY_LEFT;
             bool right = held & KEY_RIGHT;

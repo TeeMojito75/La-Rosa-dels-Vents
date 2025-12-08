@@ -17,7 +17,7 @@ public:
             auto& t  = cm.GetComponent<TransformComponent>(e);
             auto& sp = cm.GetComponent<SpriteComponent>(e);
 
-            NF_MoveSprite(1, sp.spriteID, FIX_TO_INT(t.x), FIX_TO_INT(t.y));
+            NF_MoveSprite(1, sp.spriteID, t.x, t.y);
         }
     }
 };

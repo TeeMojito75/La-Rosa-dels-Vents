@@ -4,8 +4,8 @@
 #include "ecs/Utils.hpp"
 
 struct VelocityComponent {
-    Fix vx = 0;
-    Fix vy = 0;
+    int vx = 0;
+    int vy = 0;
 };
 
 #endif
