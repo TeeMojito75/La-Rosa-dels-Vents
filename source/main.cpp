@@ -97,16 +97,29 @@ int main() {
     cm.AddComponent<SpriteComponent>(p, sp);
 
     // ================ LOOP =================
-    while (1) {
-        inputSys->Update(cm);     // Cambia velocidad
-        moveSys->Update(cm);      // Cambia posición (solo una vez)
-        spriteSys->Update(cm);    // Aplica posición al sprite (solo una vez)
+    /*while (1) {
 
-        NF_SpriteOamSet(1);       // Copia shadow OAM → real OAM
-        swiWaitForVBlank();       // Esperar VBlank
-        oamUpdate(&oamSub);       // Actualizar hardware OAM UNA vez
+        inputSys->Update(cm);
+        moveSys->Update(cm);
+
+        // <- AQUÍ debes esperar AL SIGUIENTE FRAME para mover sprites
+        swiWaitForVBlank();
+
+        spriteSys->Update(cm);
+
+        NF_SpriteOamSet(1);
+        oamUpdate(&oamSub);
     }
+    */
+    while (1) {
+        inputSys->Update(cm);
+        moveSys->Update(cm);
+        spriteSys->Update(cm);
 
+        NF_SpriteOamSet(1);
+        swiWaitForVBlank();
+        oamUpdate(&oamSub);
+    }
 
     return 0;
 }
