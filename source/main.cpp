@@ -37,7 +37,8 @@ int main() {
     NF_InitSpriteSys(1);
 
     // Fondos 256x256
-    NF_LoadTiledBg("Backgrounds/Bottom/Bottom", "Bottom", 256, 256);
+    NF_LoadTiledBg("Backgrounds/Bottom/Bottom_final", "Bottom", 256, 256);
+    NF_LoadTiledBg("Backgrounds/Bottom/Decor_compact", "Decor", 256, 256);
     
     // Cargar sprite
     NF_LoadSpriteGfx("Sprites/Jugador/Pages", 0, 16, 16);
@@ -49,6 +50,7 @@ int main() {
 
     // Crear sprite en VRAM
     NF_CreateTiledBg(1, 3, "Bottom");
+    NF_CreateTiledBg(1, 2, "Decor");
     NF_CreateSprite(1, 0, 0, 0, 100, 80); // screen=1, id=0
     NF_SpriteFrame(1, 0, 0);
 
@@ -97,16 +99,29 @@ int main() {
     cm.AddComponent<SpriteComponent>(p, sp);
 
     // ================ LOOP =================
-    while (1) {
-        inputSys->Update(cm);     // Cambia velocidad
-        moveSys->Update(cm);      // Cambia posición (solo una vez)
-        spriteSys->Update(cm);    // Aplica posición al sprite (solo una vez)
+    /*while (1) {
 
-        NF_SpriteOamSet(1);       // Copia shadow OAM → real OAM
-        swiWaitForVBlank();       // Esperar VBlank
-        oamUpdate(&oamSub);       // Actualizar hardware OAM UNA vez
+        inputSys->Update(cm);
+        moveSys->Update(cm);
+
+        // <- AQUÍ debes esperar AL SIGUIENTE FRAME para mover sprites
+        swiWaitForVBlank();
+
+        spriteSys->Update(cm);
+
+        NF_SpriteOamSet(1);
+        oamUpdate(&oamSub);
     }
+    */
+    while (1) {
+        inputSys->Update(cm);
+        moveSys->Update(cm);
+        spriteSys->Update(cm);
 
+        NF_SpriteOamSet(1);
+        swiWaitForVBlank();
+        oamUpdate(&oamSub);
+    }
 
     return 0;
 }
