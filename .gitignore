@@ -7,7 +7,7 @@ build/
 
 # ELF and MAP files
 *.elf
-*.map
+
 
 # Object files
 *.o
@@ -18,7 +18,7 @@ build/
 # Temporary linker / compiler output
 *.out
 *.lst
-*.bin
+
 
 # ===========================
 # EDITORS / IDEs
