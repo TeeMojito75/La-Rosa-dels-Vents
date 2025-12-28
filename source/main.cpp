@@ -37,7 +37,8 @@ int main() {
     NF_InitSpriteSys(1);
 
     // Fondos 256x256
-    NF_LoadTiledBg("Backgrounds/Bottom/Bottom", "Bottom", 256, 256);
+    NF_LoadTiledBg("Backgrounds/Bottom/Bottom_final", "Bottom", 256, 256);
+    NF_LoadTiledBg("Backgrounds/Bottom/Decor_compact", "Decor", 256, 256);
     
     // Cargar sprite
     NF_LoadSpriteGfx("Sprites/Jugador/Pages", 0, 16, 16);
@@ -49,6 +50,7 @@ int main() {
 
     // Crear sprite en VRAM
     NF_CreateTiledBg(1, 3, "Bottom");
+    NF_CreateTiledBg(1, 2, "Decor");
     NF_CreateSprite(1, 0, 0, 0, 100, 80); // screen=1, id=0
     NF_SpriteFrame(1, 0, 0);
 
