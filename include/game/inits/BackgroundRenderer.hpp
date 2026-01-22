@@ -30,6 +30,18 @@ private:
     int spritePalId_ = 0;
     int spriteId_    = 0;
 
-    int initialX_ = 100;
-    int initialY_ = 80;
+    int enemyGfxId_  = 1;
+    int enemyPalId_  = 1;
+    int enemySpriteId_ = 1;
+
+    int weaponGfxId_    = 2;
+    int weaponPalId_    = 2;
+    int weaponSpriteId_ = 2;
+
+
+    int initialPX_ = 100;
+    int initialPY_ = 80;
+
+    int initialEX_ = 200;
+    int initialEY_ = 80;
 };

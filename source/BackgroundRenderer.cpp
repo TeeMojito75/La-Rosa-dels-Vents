@@ -31,22 +31,49 @@ void BackgroundRenderer::loadResources() {
     // Sprite jugador 16x16 (slot 0)
     NF_LoadSpriteGfx("Sprites/Jugador/Pages", spriteGfxId_, 16, 16);
     NF_LoadSpritePal("Sprites/Jugador/Pages", spritePalId_);
+
+    // Sprite enemic 16x16 (slot 0)
+    NF_LoadSpriteGfx("Sprites/Enemic/Enemic_sharedpal", enemyGfxId_, 16, 16);
+    NF_LoadSpritePal("Sprites/Enemic/Enemic1", enemyPalId_);
+
+    // Sprite arma 16x16 (slot 0)
+    NF_LoadSpriteGfx("Sprites/Arma/Arma", weaponGfxId_, 16, 16);
+    NF_LoadSpritePal("Sprites/Arma/Arma", weaponPalId_);
 }
 
 void BackgroundRenderer::setupScene() {
     const int scr = (int)screen_;
 
-    // Copiar a VRAM (pantalla inferior)
+    // Copiar jugador a VRAM (pantalla inferior)
     NF_VramSpriteGfx(scr, spriteGfxId_, spriteGfxId_, false);
     NF_VramSpritePal(scr, spritePalId_, spritePalId_);
+
+    // Copiar enemic a VRAM (pantalla inferior)
+    NF_VramSpriteGfx(scr, enemyGfxId_, enemyGfxId_, false);
+    NF_VramSpritePal(scr, enemyPalId_, enemyPalId_);
+    
+    // Copiar arma a VRAM (pantalla inferior)
+    NF_VramSpriteGfx(scr, weaponGfxId_, weaponGfxId_, false);
+    NF_VramSpritePal(scr, weaponPalId_, weaponPalId_);
 
     // Crear fondos (ejemplo: capa 3 y 2)
     NF_CreateTiledBg(scr, (int)Layer::L3, "Bottom");
     NF_CreateTiledBg(scr, (int)Layer::L2, "Decor");
 
-    // Crear sprite en VRAM
-    NF_CreateSprite(scr, spriteId_, spriteGfxId_, spritePalId_, initialX_, initialY_);
+    // Crear sprite jugador en VRAM
+    NF_CreateSprite(scr, spriteId_, spriteGfxId_, spritePalId_, initialPX_, initialPY_);
+    NF_SpriteLayer(scr, spriteId_, 0);
     NF_SpriteFrame(scr, spriteId_, 0);
+
+    // Crear sprite enemic en VRAM
+    NF_CreateSprite(scr, enemySpriteId_, enemyGfxId_, 1, initialEX_, initialEY_);
+    NF_SpriteLayer(scr, enemySpriteId_, 1);
+    NF_SpriteFrame(scr, enemySpriteId_, 1);
+
+    // Crear sprite arma VRAM
+    NF_CreateSprite(scr, weaponSpriteId_, weaponGfxId_, weaponPalId_, 256, 192);
+    NF_SpriteLayer(scr, weaponSpriteId_, 0);
+    NF_SpriteFrame(scr, weaponSpriteId_, 0);
 }
 
 void BackgroundRenderer::commitOAMSub() {

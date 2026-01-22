@@ -14,8 +14,9 @@
 #include "game/components/VelocityComponent.hpp"
 #include "game/components/SpriteComponent.hpp"
 // (futuros)
-//#include "game/components/CollisionComponent.hpp"
-//#include "game/components/HealthComponent.hpp"
+#include "game/components/CollisionComponent.hpp"
+#include "game/components/HealthComponent.hpp"
+#include "game/components/AttackComponent.hpp"
 
 // Systems
 #include "game/systems/PlayerInputSystem.hpp"
@@ -23,7 +24,7 @@
 #include "game/systems/SpriteSystem.hpp"
 // (futuros)
 #include "game/systems/CollisionSystem.hpp"
-//#include "game/systems/CombatSystem.hpp"
+#include "game/systems/CombatSystem.hpp"
 
 #include "game/inits/CollisionMap.hpp"
 
@@ -37,6 +38,8 @@ public:
 
 private:
     void initECS();
+    void spawnPlayerAttack();
+    void updateWeaponTTL();
     void createDemoEntities();
 
 private:
@@ -53,9 +56,14 @@ private:
 
     // Futuros (si aún no existen, déjalos comentados o como nullptr)
     std::shared_ptr<CollisionSystem>   collisionSys_;
-    //std::shared_ptr<CombatSystem>      combatSys_;
+    std::shared_ptr<CombatSystem>      combatSys_;
 
     ecs::Entity player_;
     bool running_ = true;
     CollisionMap collisionMap_;
+    
+    ecs::Entity weapon_;
+    int weaponTTL_ = 0;
+    static constexpr int WEAPON_TTL_FRAMES = 8;
+    static constexpr int WEAPON_OFFSET = 16;
 };
