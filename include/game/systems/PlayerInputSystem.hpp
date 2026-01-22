@@ -12,36 +12,25 @@ constexpr uint16 PLAYER_SPEED = 1;
 
 class PlayerInputSystem : public ecs::System {
 public:
-    void Update(ecs::ComponentManager& cm) {
-        // Habilitem la lectura dels botons
-        scanKeys();
-        uint16 keys = keysHeld();
-
+    void Update(ecs::ComponentManager& cm, uint16 keys) {
         for (ecs::Entity e : mEntities) {
             auto& vel = cm.GetComponent<VelocityComponent>(e);
-            auto& sp = cm.GetComponent<SpriteComponent>(e);
+            auto& sp  = cm.GetComponent<SpriteComponent>(e);
 
-            vel.vx = 0;
-            vel.vy = 0;
+            vel.vx = 0; vel.vy = 0;
 
-            // PRIORIDAD: horizontal > vertical
-            // Setejem velocitat jugador i direcció cap on mira
             if (keys & KEY_UP) {
-                vel.vy = -PLAYER_SPEED;
-                sp.facing = Facing::Up;
+                vel.vy = -PLAYER_SPEED; sp.facing = Facing::Up;
             } else if (keys & KEY_DOWN) {
-                vel.vy = PLAYER_SPEED;
-                sp.facing = Facing::Down;
+                vel.vy = PLAYER_SPEED;  sp.facing = Facing::Down;
             } else if (keys & KEY_LEFT) {
-                vel.vx = -PLAYER_SPEED;
-                sp.facing = Facing::Left;
+                vel.vx = -PLAYER_SPEED; sp.facing = Facing::Left;
             } else if (keys & KEY_RIGHT) {
-                vel.vx = PLAYER_SPEED;
-                sp.facing = Facing::Right;
+                vel.vx = PLAYER_SPEED;  sp.facing = Facing::Right;
             }
 
-            // Finalment actualitzam boolea moviment actual
             sp.moving = (vel.vx != 0 || vel.vy != 0);
         }
     }
 };
+

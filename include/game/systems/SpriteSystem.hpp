@@ -27,9 +27,14 @@ public:
     void Update(ecs::ComponentManager& cm) {
         for (auto entity : mEntities) {
 
-            auto& t = cm.GetComponent<TransformComponent>(entity);
-            auto& sp = cm.GetComponent<SpriteComponent>(entity);
-
+        auto& t = cm.GetComponent<TransformComponent>(entity);
+        auto& sp = cm.GetComponent<SpriteComponent>(entity);
+        
+        if (sp.spriteID == 2) { // weapon sprite
+            // només mou, no frame
+            NF_MoveSprite(1, sp.spriteID, t.x, t.y);
+            continue;
+        }
         
         int frame = baseFrame(sp.facing);
 
